@@ -16,16 +16,15 @@ import logging
 import os
 
 # ─── Load environment variables from .env file ───────────────
-load_dotenv()
-
 db_url = os.getenv('DATABASE_URL', '')
 if db_url.startswith('postgres://'):
-    os.environ['DATABASE_URL'] = db_url.replace('postgres://', 'postgresql://', 1)
+    db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    os.environ['DATABASE_URL'] = db_url
 
-# ─── Initialize Flask app ────────────────────────────────────
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 logging.basicConfig(level=logging.DEBUG)
 
