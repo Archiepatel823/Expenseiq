@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — ExpenseIQ{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Summary Cards ─────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.4rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    border-radius: 3px 0 0 3px;
+  }
+
+  .stat-card.purple::before { background: var(--accent); }
+  .stat-card.red::before    { background: var(--accent2); }
+  .stat-card.green::before  { background: var(--green); }
+
+  .stat-icon { font-size: 1.8rem; margin-bottom: 0.6rem; }
+
+  .stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.9rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-card.purple .stat-value { color: var(--accent); }
+  .stat-card.red    .stat-value { color: var(--accent2); }
+  .stat-card.green  .stat-value { color: var(--green); }
+
+  /* ── Charts Grid ────────────────────────── */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 900px) {
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .chart-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .chart-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    color: var(--text);
+  }
+
+  .chart-subtitle { font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem; }
+
+  canvas { max-height: 280px; }
+
+  /* ── Recent Expenses Table ──────────────── */
+  .recent-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .recent-header {
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .recent-header h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    padding: 0.8rem 1.5rem;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(42,47,66,0.5);
+    font-size: 0.9rem;
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--muted);
+  }
+
+  .empty-state .emoji { font-size: 2.5rem; margin-bottom: 0.8rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+  <div>
+    <h1>Dashboard 📊</h1>
+    <p class="text-muted">{{ current_month }} overview</p>
+  </div>
+  <a href="{{ url_for('add_expense') }}" class="btn btn-primary">+ Add Expense</a>
+</div>
+
+
+<!-- ── Summary Cards ──────────────────────────────── -->
+<div class="stats-grid">
+
+  <div class="stat-card purple">
+    <div class="stat-icon">💳</div>
+    <div class="stat-label">This Month</div>
+    <div class="stat-value">₹{{ monthly_total }}</div>
+  </div>
+
+  <div class="stat-card red">
+    <div class="stat-icon">📈</div>
+    <div class="stat-label">All Time Total</div>
+    <div class="stat-value">₹{{ all_time_total }}</div>
+  </div>
+
+  <div class="stat-card green">
+    <div class="stat-icon">🧾</div>
+    <div class="stat-label">Total Entries</div>
+    <div class="stat-value">{{ total_count }}</div>
+  </div>
+
+</div>
+
+
+<!-- ── Charts ─────────────────────────────────────── -->
+<div class="charts-grid">
+
+  <!-- Pie chart: spending by category -->
+  <div class="chart-card">
+    <div class="chart-title">
+      By Category
+      <div class="chart-subtitle">This month's breakdown</div>
+    </div>
+    <canvas id="categoryChart"></canvas>
+    <p id="no-category" class="text-muted mt-2" style="display:none; text-align:center;">
+      No expenses this month yet.
+    </p>
+  </div>
+
+  <!-- Bar chart: monthly trend -->
+  <div class="chart-card">
+    <div class="chart-title">
+      Monthly Trend
+      <div class="chart-subtitle">Spending across {{ current_month[:4] }}</div>
+    </div>
+    <canvas id="trendChart"></canvas>
+  </div>
+
+</div>
+
+
+<!-- ── Recent Expenses ─────────────────────────────── -->
+<div class="recent-card">
+  <div class="recent-header">
+    <h2>Recent Expenses</h2>
+    <a href="{{ url_for('expenses') }}" class="btn btn-secondary" style="font-size:0.8rem; padding:0.4rem 0.9rem;">
+      View All →
+    </a>
+  </div>
+
+  {% if recent_expenses %}
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Category</th>
+          <th>Date</th>
+          <th style="text-align:right;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in recent_expenses %}
+        <tr>
+          <td><strong>{{ exp.title }}</strong></td>
+          <td><span class="badge">{{ exp.category }}</span></td>
+          <td class="text-muted">{{ exp.date.strftime('%d %b %Y') }}</td>
+          <td style="text-align:right; font-weight:700; color:var(--accent2);">₹{{ exp.amount }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      <div class="emoji">💸</div>
+      <p>No expenses yet. <a href="{{ url_for('add_expense') }}" style="color:var(--accent);">Add your first one!</a></p>
+    </div>
+  {% endif %}
+</div>
+
+
+<!-- ── Chart.js Scripts ────────────────────────────── -->
+<script>
+  // Chart.js global defaults
+  Chart.defaults.color = '#7a7f9a';
+  Chart.defaults.font.family = 'DM Sans';
+
+  // Colour palette for categories
+  const COLORS = [
+    '#7c6af7','#f76a6a','#4ade80','#fbbf24',
+    '#38bdf8','#fb923c','#a78bfa','#f472b6','#34d399'
+  ];
+
+  // ── 1. Category Pie Chart ──
+  // We call the /api/category-data endpoint we built in app.py
+  fetch('/api/category-data')
+    .then(res => res.json())
+    .then(data => {
+      if (data.labels.length === 0) {
+        document.getElementById('categoryChart').style.display = 'none';
+        document.getElementById('no-category').style.display = 'block';
+        return;
+      }
+
+      new Chart(document.getElementById('categoryChart'), {
+        type: 'doughnut',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            data: data.values,
+            backgroundColor: COLORS.slice(0, data.labels.length),
+            borderWidth: 2,
+            borderColor: '#1e2230'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { padding: 16, boxWidth: 12, font: { size: 12 } }
+            }
+          }
+        }
+      });
+    });
+
+
+  // ── 2. Monthly Trend Bar Chart ──
+  fetch('/api/monthly-trend')
+    .then(res => res.json())
+    .then(data => {
+      new Chart(document.getElementById('trendChart'), {
+        type: 'bar',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: 'Total Spent (₹)',
+            data: data.values,
+            backgroundColor: 'rgba(124,106,247,0.7)',
+            borderColor: '#7c6af7',
+            borderWidth: 1,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: '#2a2f42' } },
+            y: { grid: { color: '#2a2f42' },
+                 ticks: { callback: v => '₹' + v } }
+          }
+        }
+      });
+    });
+</script>
+
+{% endblock %}
