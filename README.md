@@ -106,12 +106,8 @@ Go to: **http://127.0.0.1:5000**
 
 ---
 
-##  How to describe this on your resume
+## Author
 
-**Project:** ExpenseIQ — Personal Expense Tracker Web Application
-- Built a fullstack web app using **Python Flask** and **PostgreSQL** with user authentication (login/register) and session management
-- Implemented full **CRUD operations** for expense management with category and date filters
-- Developed **REST API endpoints** consumed by the frontend using JavaScript **Fetch API**
-- Integrated **Chart.js** for interactive dashboard visualisations (doughnut + bar charts)
-- Used **SQLAlchemy ORM** for database modelling and **Werkzeug** for secure password hashing
-- Designed a responsive, dark-themed UI using pure **HTML/CSS** with **Jinja2** templating
+Archie Patel
+Software Engineer
+
