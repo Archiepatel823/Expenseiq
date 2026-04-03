@@ -1,70 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Register — ExpenseIQ{% endblock %}
 
-{% block extra_css %}
-<style>
-  .auth-wrapper {
-    min-height: 80vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .auth-box {
-    width: 100%;
-    max-width: 440px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2.5rem;
-  }
-
-  .auth-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 2rem;
-    font-weight: 800;
-    margin-bottom: 0.3rem;
-  }
-
-  .auth-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
-  .auth-footer { text-align: center; margin-top: 1.5rem; font-size: 0.88rem; color: var(--muted); }
-  .auth-footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="auth-wrapper">
   <div class="auth-box">
-
     <h1 class="auth-title">Create account ✨</h1>
     <p class="auth-sub">Start tracking your expenses today</p>
 
     <form method="POST" action="{{ url_for('register') }}">
-
       <div class="form-group">
         <label for="name">Full Name</label>
-        <input type="text" id="name" name="name"
-               placeholder="Archie Patel" required
+        <input type="text" id="name" name="name" placeholder="Archie Patel" required
                value="{{ request.form.get('name', '') }}"/>
       </div>
-
       <div class="form-group">
         <label for="email">Email</label>
-        <input type="email" id="email" name="email"
-               placeholder="you@example.com" required
+        <input type="email" id="email" name="email" placeholder="you@example.com" required
                value="{{ request.form.get('email', '') }}"/>
       </div>
-
       <div class="form-group">
-        <label for="password">Password <span style="color:var(--muted);font-size:0.75rem;">(min 6 characters)</span></label>
+        <label for="password">Password <span style="color:var(--muted); font-size:0.75rem;">(min 6 characters)</span></label>
         <input type="password" id="password" name="password" placeholder="••••••••" required/>
       </div>
-
       <div class="form-group">
         <label for="confirm_password">Confirm Password</label>
         <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required/>
       </div>
-
       <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:0.85rem;">
         Create Account →
       </button>
@@ -73,7 +34,6 @@
     <p class="auth-footer">
       Already have an account? <a href="{{ url_for('login') }}">Login</a>
     </p>
-
   </div>
 </div>
 {% endblock %}

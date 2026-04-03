@@ -1,54 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Edit Expense — ExpenseIQ{% endblock %}
 
-{% block extra_css %}
-<style>
-  .form-card {
-    max-width: 560px;
-    margin: 0 auto;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 2.5rem;
-  }
-
-  .form-title { font-family:'Syne',sans-serif; font-size:1.6rem; font-weight:800; margin-bottom:0.3rem; }
-  .form-sub   { color:var(--muted); font-size:0.88rem; margin-bottom:2rem; }
-  .form-row   { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
-  .form-actions { display:flex; gap:0.8rem; margin-top:1.5rem; }
-
-  @media (max-width: 500px) { .form-row { grid-template-columns:1fr; } }
-</style>
-{% endblock %}
-
 {% block content %}
 <div class="form-card">
-
   <h1 class="form-title">Edit Expense ✏️</h1>
   <p class="form-sub">Update the expense details below.</p>
 
-  <!-- POST to /expenses/edit/<id> route -->
   <form method="POST" action="{{ url_for('edit_expense', expense_id=expense.id) }}">
-
     <div class="form-group">
       <label for="title">Expense Title *</label>
-      <input type="text" id="title" name="title"
-             required value="{{ expense.title }}"/>
+      <input type="text" id="title" name="title" required value="{{ expense.title }}"/>
     </div>
 
     <div class="form-row">
       <div class="form-group">
         <label for="amount">Amount (₹) *</label>
-        <input type="number" id="amount" name="amount"
-               step="0.01" min="0.01"
+        <input type="number" id="amount" name="amount" step="0.01" min="0.01"
                required value="{{ expense.amount }}"/>
       </div>
-
       <div class="form-group">
         <label for="date">Date *</label>
-        <!-- Format date as YYYY-MM-DD for the date input -->
-        <input type="date" id="date" name="date"
-               required value="{{ expense.date.strftime('%Y-%m-%d') }}"/>
+        <input type="date" id="date" name="date" required
+               value="{{ expense.date.strftime('%Y-%m-%d') }}"/>
       </div>
     </div>
 
@@ -56,16 +29,13 @@
       <label for="category">Category *</label>
       <select id="category" name="category" required>
         {% for cat in categories %}
-          <option value="{{ cat }}"
-            {% if cat == expense.category %}selected{% endif %}>
-            {{ cat }}
-          </option>
+          <option value="{{ cat }}" {% if cat == expense.category %}selected{% endif %}>{{ cat }}</option>
         {% endfor %}
       </select>
     </div>
 
     <div class="form-group">
-      <label for="description">Description <span style="color:var(--muted);font-size:0.75rem;">(optional)</span></label>
+      <label for="description">Description <span style="color:var(--muted); font-size:0.75rem;">(optional)</span></label>
       <textarea id="description" name="description" rows="3">{{ expense.description or '' }}</textarea>
     </div>
 
@@ -75,8 +45,6 @@
       </button>
       <a href="{{ url_for('expenses') }}" class="btn btn-secondary">Cancel</a>
     </div>
-
   </form>
-
 </div>
 {% endblock %}

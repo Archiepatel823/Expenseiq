@@ -7,242 +7,25 @@
 
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-  <!-- Chart.js for dashboard graphs -->
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+
+  <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-  <style>
-    /* ── CSS Variables (theme) ─────────────────────── */
-    :root {
-      --bg:        #0d0f14;
-      --surface:   #161920;
-      --card:      #1e2230;
-      --border:    #2a2f42;
-      --accent:    #7c6af7;
-      --accent2:   #f76a6a;
-      --green:     #4ade80;
-      --yellow:    #fbbf24;
-      --text:      #e8eaf2;
-      --muted:     #7a7f9a;
-      --radius:    14px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Navbar ────────────────────────────────────── */
-    nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: 64px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .nav-brand {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.4rem;
-      font-weight: 800;
-      color: var(--accent);
-      text-decoration: none;
-      letter-spacing: -0.5px;
-    }
-
-    .nav-brand span { color: var(--text); }
-
-    .nav-links {
-      display: flex;
-      gap: 0.3rem;
-      align-items: center;
-    }
-
-    .nav-links a {
-      color: var(--muted);
-      text-decoration: none;
-      padding: 0.45rem 1rem;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    .nav-links a:hover,
-    .nav-links a.active { color: var(--text); background: var(--card); }
-
-    .nav-links .btn-logout {
-      background: rgba(247,106,106,0.12);
-      color: var(--accent2);
-      margin-left: 0.5rem;
-    }
-
-    .nav-links .btn-logout:hover { background: rgba(247,106,106,0.25); }
-
-    /* ── Main content area ─────────────────────────── */
-    main { flex: 1; padding: 2rem; max-width: 1200px; width: 100%; margin: 0 auto; }
-
-    /* ── Flash messages ────────────────────────────── */
-    .flash-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-
-    .flash {
-      padding: 0.9rem 1.2rem;
-      border-radius: 10px;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-
-    .flash.success { background: rgba(74,222,128,0.12); color: var(--green);  border: 1px solid rgba(74,222,128,0.25); }
-    .flash.error   { background: rgba(247,106,106,0.12); color: var(--accent2); border: 1px solid rgba(247,106,106,0.25); }
-    .flash.info    { background: rgba(124,106,247,0.12); color: var(--accent);  border: 1px solid rgba(124,106,247,0.25); }
-
-    /* ── Cards ─────────────────────────────────────── */
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.5rem;
-    }
-
-    /* ── Buttons ────────────────────────────────────── */
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.6rem 1.3rem;
-      border-radius: 9px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      text-decoration: none;
-      transition: all 0.2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    .btn-primary  { background: var(--accent);  color: #fff; }
-    .btn-primary:hover  { opacity: 0.85; transform: translateY(-1px); }
-    .btn-danger   { background: rgba(247,106,106,0.15); color: var(--accent2); border: 1px solid rgba(247,106,106,0.3); }
-    .btn-danger:hover   { background: rgba(247,106,106,0.3); }
-    .btn-secondary { background: var(--surface); color: var(--muted); border: 1px solid var(--border); }
-    .btn-secondary:hover { color: var(--text); }
-
-    /* ── Form inputs ────────────────────────────────── */
-    .form-group { margin-bottom: 1.2rem; }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 0.4rem;
-    }
-
-    input, select, textarea {
-      width: 100%;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      padding: 0.75rem 1rem;
-      color: var(--text);
-      font-size: 0.95rem;
-      font-family: 'DM Sans', sans-serif;
-      transition: border-color 0.2s;
-      outline: none;
-    }
-
-    input:focus, select:focus, textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(124,106,247,0.15);
-    }
-
-    select option { background: var(--surface); }
-
-    /* ── Page header ────────────────────────────────── */
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-    }
-
-    .page-header h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.8rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-    }
-
-    /* ── Utility ─────────────────────────────────────  */
-    .text-muted   { color: var(--muted); font-size: 0.85rem; }
-    .text-accent  { color: var(--accent); }
-    .text-green   { color: var(--green); }
-    .text-red     { color: var(--accent2); }
-    .mt-1 { margin-top: 0.5rem; }
-    .mt-2 { margin-top: 1rem; }
-    .mt-3 { margin-top: 1.5rem; }
-    .flex { display: flex; }
-    .gap-1 { gap: 0.5rem; }
-
-    /* ── Category badge ─────────────────────────────── */
-    .badge {
-      display: inline-block;
-      padding: 0.2rem 0.7rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      background: rgba(124,106,247,0.15);
-      color: var(--accent);
-    }
-
-    /* ── Responsive ─────────────────────────────────── */
-    @media (max-width: 768px) {
-      main { padding: 1rem; }
-      nav  { padding: 0 1rem; }
-      .nav-links a span { display: none; }
-    }
-  </style>
 
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-  <!-- ── Navigation ───────────────────────────── -->
   <nav>
     <a href="{{ url_for('index') }}" class="nav-brand">Expense<span>IQ</span></a>
-
     <div class="nav-links">
       {% if current_user.is_authenticated %}
-        <a href="{{ url_for('dashboard') }}"
-           class="{% if request.endpoint == 'dashboard' %}active{% endif %}">
-          📊 <span>Dashboard</span>
-        </a>
-        <a href="{{ url_for('expenses') }}"
-           class="{% if request.endpoint in ['expenses','add_expense','edit_expense'] %}active{% endif %}">
-          💸 <span>Expenses</span>
-        </a>
-        <a href="{{ url_for('add_expense') }}" class="btn btn-primary" style="padding:0.45rem 1rem;">
-          + Add
-        </a>
-        <a href="{{ url_for('logout') }}" class="btn-logout">
-          Logout
-        </a>
+        <a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}">📊 <span>Dashboard</span></a>
+        <a href="{{ url_for('expenses') }}" class="{% if request.endpoint in ['expenses','add_expense','edit_expense'] %}active{% endif %}">💸 <span>Expenses</span></a>
+        <a href="{{ url_for('add_expense') }}" class="btn btn-primary" style="padding:0.45rem 1rem;">+ Add</a>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
       {% else %}
         <a href="{{ url_for('login') }}">Login</a>
         <a href="{{ url_for('register') }}" class="btn btn-primary" style="padding:0.45rem 1rem;">Sign Up</a>
@@ -250,7 +33,6 @@
     </div>
   </nav>
 
-  <!-- ── Flash Messages ───────────────────────── -->
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       <div class="flash-container" style="padding-top:1rem;">
@@ -261,10 +43,10 @@
     {% endif %}
   {% endwith %}
 
-  <!-- ── Page Content ─────────────────────────── -->
-  <main>
-    {% block content %}{% endblock %}
-  </main>
+  <main>{% block content %}{% endblock %}</main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
 
 </body>
 </html>
