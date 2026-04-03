@@ -107,6 +107,14 @@ Go to: **http://127.0.0.1:5000**
 ---
 ##  Author
 
+<<<<<<< HEAD
 Archie Patel  
 B.Tech CSE (Data Science) 
 Python | NLP | Machine Learning | Data Analytics
+=======
+## Author
+
+Archie Patel
+Software Engineer
+
+>>>>>>> 9f27c980aa6e1880f6bd02ef9cc82a92c9b28d73
