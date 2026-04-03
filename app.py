@@ -12,15 +12,22 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from sqlalchemy import func, extract
+import logging
+import os
 
 # ─── Load environment variables from .env file ───────────────
 load_dotenv()
+
+db_url = os.getenv('DATABASE_URL', '')
+if db_url.startswith('postgres://'):
+    os.environ['DATABASE_URL'] = db_url.replace('postgres://', 'postgresql://', 1)
 
 # ─── Initialize Flask app ────────────────────────────────────
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # Suppress warning
+app.config['PROPAGATE_EXCEPTIONS'] = True
+logging.basicConfig(level=logging.DEBUG)
 
 # ─── Initialize extensions ───────────────────────────────────
 db = SQLAlchemy(app)           # ORM for database
@@ -465,8 +472,8 @@ def api_monthly_trend():
 # RUN THE APP
 # ============================================================
 
+with app.app_context():
+    db.create_all()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()   # Create tables if they don't exist
-        print("✅ Database tables created successfully.")
-    app.run(debug=True)   # debug=True → auto-reload on code changes
+    app.run(debug=True)
